@@ -110,3 +110,32 @@ exports.updateProfile = async (req, res) => {
         res.status(500).json({ message: err.message });
     }
 };
+
+// Delete user account with password verification (protected route)
+exports.deleteProfile = async (req, res) => {
+    try {
+        const { password } = req.body;
+        
+        // Hitta användaren med lösenord
+        const user = await User.findById(req.user.userId);
+        
+        if (!user) {
+            return res.status(404).json({ message: "User not found!" });
+        }
+
+        // Verifiera lösenordet
+        const isMatch = await user.comparePassword(password);
+        if (!isMatch) {
+            return res.status(401).json({ message: "Invalid password" });
+        }
+
+        // Ta bort användaren
+        await user.deleteOne();
+
+        res.json({ 
+            message: "Account deleted successfully" 
+        });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
