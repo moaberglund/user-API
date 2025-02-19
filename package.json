@@ -6,7 +6,7 @@
     "start": "nodemon server.js",
     "dev": "nodemon server.js"
   },
-  "author": "",
+  "author": "Moa Berglund",
   "license": "ISC",
   "description": "",
   "dependencies": {
