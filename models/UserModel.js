@@ -9,7 +9,8 @@ const UserSchema = new mongoose.Schema({
         min: 5,
         max: 50,
         unique: true,
-        trim: true
+        trim: true,
+        lowercase: true
     },
     password: {
         type: String,
@@ -19,7 +20,9 @@ const UserSchema = new mongoose.Schema({
     },
     email: {
         type: String,
-        trim: true
+        trim: true,
+        lowercase: true,
+        match: [/.+\@.+\..+/, "Please fill a valid email address"]
     },
     firstname: {
         type: String,
