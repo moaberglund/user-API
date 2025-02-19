@@ -39,10 +39,10 @@ exports.login = async (req, res) => {
         }
 
         // Create JWT token
-        const token = jwt.sign({ userId: user._id}, process.env.JWT_SECRET_KEY, {expiresIn: "12h"});
+        const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET_KEY, { expiresIn: "12h" });
         res.json({ token });
     } catch (err) {
-        res.status(500).json({message: err.message});
+        res.status(500).json({ message: err.message });
     }
 };
 
@@ -50,11 +50,63 @@ exports.login = async (req, res) => {
 exports.getProfile = async (req, res) => {
     try {
         const user = await User.findById(req.user.userId).select("-password"); // exclude password
-        if(!user) {
-            return res.status(404).json({message: "User not found!"});
+        if (!user) {
+            return res.status(404).json({ message: "User not found!" });
         }
         res.json(user);
     } catch (err) {
-        res.status(500).json({message: err.message});
+        res.status(500).json({ message: err.message });
+    }
+};
+
+// Update user profile (protected route)
+exports.updateProfile = async (req, res) => {
+    try {
+        const { username, email, firstname, lastname, age } = req.body;
+        
+        // Kontrollera om användaren vill uppdatera användarnamnet
+        if (username) {
+            // Kolla om det nya användarnamnet redan finns (och inte tillhör nuvarande användare)
+            const existingUser = await User.findOne({ 
+                username, 
+                _id: { $ne: req.user.userId } 
+            });
+            if (existingUser) {
+                return res.status(400).json({ message: "Username already taken!" });
+            }
+        }
+
+        // Hitta och uppdatera användaren
+        const updatedUser = await User.findByIdAndUpdate(
+            req.user.userId,
+            {
+                $set: {
+                    ...(username && { username }),
+                    ...(email && { email }),
+                    ...(firstname && { firstname }),
+                    ...(lastname && { lastname }),
+                    ...(age && { age })
+                }
+            },
+            { 
+                new: true, // Returnera den uppdaterade användaren
+                runValidators: true, // Kör schema validering
+                select: '-password' // Exkludera lösenordet från svaret
+            }
+        );
+
+        if (!updatedUser) {
+            return res.status(404).json({ message: "User not found!" });
+        }
+
+        res.json({
+            message: "Profile updated successfully",
+            user: updatedUser
+        });
+    } catch (err) {
+        if (err.name === 'ValidationError') {
+            return res.status(400).json({ message: err.message });
+        }
+        res.status(500).json({ message: err.message });
     }
 };

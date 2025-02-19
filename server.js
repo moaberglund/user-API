@@ -21,7 +21,7 @@ app.listen(port, () => {
 });
 
 // Routes
-app.use('/api/user', userRoutes);
+app.use('/user', userRoutes);
 
 // Connect to DB
 mongoose.set("strictQuery", false);
