@@ -64,9 +64,9 @@ exports.updateProfile = async (req, res) => {
     try {
         const { username, email, firstname, lastname, age } = req.body;
         
-        // Kontrollera om användaren vill uppdatera användarnamnet
+        // Controll if the user wants to update the username
         if (username) {
-            // Kolla om det nya användarnamnet redan finns (och inte tillhör nuvarande användare)
+            // Check if username already exists and not belongs to other user
             const existingUser = await User.findOne({ 
                 username, 
                 _id: { $ne: req.user.userId } 
@@ -76,7 +76,7 @@ exports.updateProfile = async (req, res) => {
             }
         }
 
-        // Hitta och uppdatera användaren
+        // Find and update the user
         const updatedUser = await User.findByIdAndUpdate(
             req.user.userId,
             {
@@ -89,9 +89,9 @@ exports.updateProfile = async (req, res) => {
                 }
             },
             { 
-                new: true, // Returnera den uppdaterade användaren
-                runValidators: true, // Kör schema validering
-                select: '-password' // Exkludera lösenordet från svaret
+                new: true, // Return user
+                runValidators: true, // Run model validations
+                select: '-password' // Exclude password from result
             }
         );
 
@@ -116,20 +116,18 @@ exports.deleteProfile = async (req, res) => {
     try {
         const { password } = req.body;
         
-        // Hitta användaren med lösenord
         const user = await User.findById(req.user.userId);
         
         if (!user) {
             return res.status(404).json({ message: "User not found!" });
         }
 
-        // Verifiera lösenordet
+        // Verify password
         const isMatch = await user.comparePassword(password);
         if (!isMatch) {
             return res.status(401).json({ message: "Invalid password" });
         }
 
-        // Ta bort användaren
         await user.deleteOne();
 
         res.json({ 
