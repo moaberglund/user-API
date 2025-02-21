@@ -11,5 +11,6 @@ router.post('/login', login);
 router.get('/profile', auth, getProfile);
 router.put('/profile', auth, updateProfile);
 router.delete('/profile', auth, deleteProfile)
+router.get('validate', auth, validateToken);
 
 module.exports = router;
