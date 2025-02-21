@@ -3,7 +3,7 @@ const router = express.Router();
 const auth = require('../middleware/auth');
 
 // Import User Controller
-const { register, login, getProfile, updateProfile, deleteProfile } = require('../controllers/UserController');
+const { register, login, getProfile, updateProfile, deleteProfile, validateToken } = require('../controllers/UserController');
 
 // Routes
 router.post('/register', register);
