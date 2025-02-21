@@ -140,3 +140,54 @@ exports.deleteProfile = async (req, res) => {
         res.status(500).json({ message: err.message });
     }
 };
+
+
+// Validate JWT token
+exports.validateToken = async (req, res) => {
+    try {
+        const token = req.headers.authorization?.split(' ')[1];
+        
+        if (!token) {
+            return res.status(401).json({ 
+                valid: false, 
+                message: "Missing token" 
+            });
+        }
+
+        // Verify token
+        const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+        
+        // Controll user exists
+        const user = await User.findById(decoded.userId).select("-password");
+        if (!user) {
+            return res.status(401).json({ 
+                valid: false, 
+                message: "No user found" 
+            });
+        }
+
+        return res.json({ 
+            valid: true,
+            user: user,
+            message: "Valid token"
+        });
+
+    } catch (err) {
+        if (err.name === 'JsonWebTokenError') {
+            return res.status(401).json({ 
+                valid: false, 
+                message: "Not valid token" 
+            });
+        }
+        if (err.name === 'TokenExpiredError') {
+            return res.status(401).json({ 
+                valid: false, 
+                message: "Token has expired" 
+            });
+        }
+        return res.status(500).json({ 
+            valid: false, 
+            message: "Server error" 
+        });
+    }
+};
